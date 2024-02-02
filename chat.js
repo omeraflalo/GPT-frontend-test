@@ -1,10 +1,11 @@
-function addChatMessage(side,userName, message) {
+
+function addChatMessage(side, userName, message) {
     const messagesContainer = document.getElementById('mesegesContainer');
 
     const li = document.createElement('li');
     li.className = side;
 
-    if(side=='bot'){
+    if (side == 'bot') {
         const chatImgDiv = document.createElement('div');
         chatImgDiv.className = 'chat-img';
         const img = document.createElement('img');
@@ -25,6 +26,7 @@ function addChatMessage(side,userName, message) {
     h5.textContent = userName;
 
     const p = document.createElement('p');
+    p.className = 'message-text'
     p.textContent = message;
 
     chatMessageDiv.appendChild(h5);
@@ -35,33 +37,68 @@ function addChatMessage(side,userName, message) {
     li.appendChild(chatBodyDiv);
 
     messagesContainer.appendChild(li);
+
+    scrollMessages();
+
+    return p;
 }
 
-const message = []
+function scrollMessages(){
+    const messagesContainer = document.getElementById('mesegesContainer');
+    messagesContainer.scrollTo(0, messagesContainer.scrollHeight);
+}
+
+function serverIsOfflineMessage() {
+    const serverOfflineMessage = document.getElementById('serverOfflineMessage');
+    const mainCard = document.getElementById('mainCard');
+    serverOfflineMessage.style.display = 'block';
+    mainCard.style.display = 'none';
+}
+
+const messages = []
+
+const client = new WebSocket('ws://localhost:8081');
+
+client.onopen = () => {
+    console.log('Connected to server.');
+};
+
+let messageElement = null
+client.onmessage = (message) => {
+    message = JSON.parse(message.data);
+    if (messageElement == null) {
+        messageElement = addChatMessage('bot', 'Leo', '')
+    }
+
+    if (!message?.end) {
+        messageElement.textContent += message?.message
+    }
+    else if (message?.end) {
+        messageElement.textContent += message?.message
+        messages.push({ role: "assistant", content: messageElement.textContent })
+        messageElement = null
+    }
+    scrollMessages();
+};
+client.onclose = () => {
+    console.log('Disconnected from server.');
+    serverIsOfflineMessage();
+};
+
 
 function buttonClicked() {
-    input = document.getElementById('messageInput').value;
-    if (input.value == '') {
+    input = document.getElementById('messageInput');
+    textValue = input.value;
+    input.value = "";
+    if (textValue == '') {
         return;
     }
-    addChatMessage('student','Student',input);
-    message.push({role:"user", content: input})
+    addChatMessage('student', 'Student', textValue);
+    messages.push({ role: "user", content: textValue })
 
-    // send message to server
-    fetch('http://localhost:8002/ask-query', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ messages: message })
-    })
-    .then(response => response.text())
-    .then(data => {
-        message.push({role:"assistant", content: data})
-
-        addChatMessage('bot','Leo',data);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
+    console.log(messages)
+    client.send(JSON.stringify(messages));
 }
+
+
+

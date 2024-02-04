@@ -56,7 +56,7 @@ function serverIsOfflineMessage() {
 
 const messages = []
 
-const client = new WebSocket('ws://51.17.111.64:8081');
+const client = new WebSocket('ws://localhost:8081');
 
 client.onopen = () => {
     console.log('Connected to server.');

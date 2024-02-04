@@ -1,4 +1,3 @@
-
 function addChatMessage(side, userName, message) {
     const messagesContainer = document.getElementById('mesegesContainer');
 
@@ -57,13 +56,14 @@ function serverIsOfflineMessage() {
 
 const messages = []
 
-const client = new WebSocket('ws://localhost:8081');
+const client = new WebSocket('ws://51.17.111.64:8081');
 
 client.onopen = () => {
     console.log('Connected to server.');
 };
 
 let messageElement = null
+let isRecivngMessage = false;
 client.onmessage = (message) => {
     message = JSON.parse(message.data);
     if (messageElement == null) {
@@ -77,6 +77,7 @@ client.onmessage = (message) => {
         messageElement.textContent += message?.message
         messages.push({ role: "assistant", content: messageElement.textContent })
         messageElement = null
+        isRecivngMessage = false;
     }
     scrollMessages();
 };
@@ -87,18 +88,21 @@ client.onclose = () => {
 
 
 function buttonClicked() {
-    input = document.getElementById('messageInput');
-    textValue = input.value;
-    input.value = "";
-    if (textValue == '') {
-        return;
-    }
-    addChatMessage('student', 'Student', textValue);
-    messages.push({ role: "user", content: textValue })
+    if(!isRecivngMessage){
+        isRecivngMessage = true;
+        input = document.getElementById('messageInput');
+        textValue = input.value;
+        input.value = "";
+        if (textValue == '') {
+            return;
+        }
+        addChatMessage('student', 'Student', textValue);
+        messages.push({ role: "user", content: textValue })
 
-    console.log(messages)
-    client.send(JSON.stringify(messages));
+        console.log(messages)
+        client.send(JSON.stringify(messages));
+    }
 }
 
 
-
+// export {buttonClicked}

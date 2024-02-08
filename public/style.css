@@ -33,6 +33,7 @@ body {
   background: url("https://images.unsplash.com/photo-1451186859696-371d9477be93?crop=entropy&fit=crop&fm=jpg&h=975&ixjsv=2.1.0&ixlib=rb-0.3.5&q=80&w=1925") no-repeat 0 0;
   filter: blur(80px);
   transform: scale(1.2);
+  position: fixed;
 }
 
 /*--------------------
@@ -44,8 +45,8 @@ Chat
   left: 50%;
   transform: translate(-50%, -50%);
   width: 330px;
-  height: 80vh;
-  max-height: 550px;
+  height: 80%;
+  max-height: max-content;
   z-index: 2;
   overflow: hidden;
   box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
@@ -71,13 +72,13 @@ Chat Title
 }
 .chat-title h1, .chat-title h2 {
   font-weight: normal;
-  font-size: 10px;
+  font-size: 13px;
   margin: 0;
   padding: 0;
 }
 .chat-title h2 {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 1px;
 }
 .chat-title .avatar {
@@ -86,8 +87,8 @@ Chat Title
   top: 8px;
   left: 9px;
   border-radius: 30px;
-  width: 30px;
-  height: 30px;
+  width: 35px;
+  height: 35px;
   overflow: hidden;
   margin: 0;
   padding: 0;
@@ -122,7 +123,7 @@ Messages
   border-radius: 10px 10px 10px 0;
   background: rgba(0, 0, 0, 0.3);
   margin: 8px 0;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.4;
   margin-left: 35px;
   position: relative;

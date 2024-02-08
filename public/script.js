@@ -9,7 +9,9 @@ $(window).load(function () {
   setTimeout(function () {
     addEmptyBotMessage();
     setTimeout(function () {
-      addNewDataMessage('Hey there! 🎉\nI\'m Leo your new English buddy, ready to dive into the fun side of learning. Let\'s chat, laugh, and level up your skills as if we\'re just friends hanging out.\nReady to start this awesome journey together? 😄');
+      const firstMessage = 'Hey there! 🎉\nI\'m Leo your new English buddy, ready to dive into the fun side of learning. Let\'s chat, laugh, and level up your skills as if we\'re just friends hanging out.\nReady to start this awesome journey together? 😄'; 
+      addNewDataMessage(firstMessage);
+      messages.push({ role: "assistant", content: firstMessage })
     }, 1500);
   }, 100);
 });

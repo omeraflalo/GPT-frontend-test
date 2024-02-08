@@ -9,7 +9,7 @@ $(window).load(function () {
   setTimeout(function () {
     addEmptyBotMessage();
     setTimeout(function () {
-      const firstMessage = 'Hey there! 🎉\nI\'m Leo your new English buddy, ready to dive into the fun side of learning. Let\'s chat, laugh, and level up your skills as if we\'re just friends hanging out.\nReady to start this awesome journey together? 😄'; 
+      const firstMessage = 'Hey there! 🎉\nI\'m Leo your new English buddy, ready to dive into the fun side of learning. Let\'s chat, laugh, and level up your skills as if we\'re just friends hanging out.\nReady to start this awesome journey together? 😄';
       addNewDataMessage(firstMessage);
       messages.push({ role: "assistant", content: firstMessage })
     }, 1500);
@@ -94,7 +94,6 @@ client.onopen = () => {
 };
 
 const messages = []
-
 let buildMessage = null
 client.onmessage = (message) => {
   message = JSON.parse(message.data);
@@ -109,6 +108,7 @@ client.onmessage = (message) => {
   }
   else if (message?.end) {
     changeLastMessage(buildMessage)
+    fetchAudio(buildMessage)
     messages.push({ role: "assistant", content: buildMessage })
     buildMessage = null
     isRecivngMessage = false;
@@ -116,5 +116,37 @@ client.onmessage = (message) => {
 };
 client.onclose = () => {
   console.log('Disconnected from server.');
-  addNewDataMessage("Sorry, The server is close. See you later...");
+  addNewDataMessage("Sorry, The server is closed. See you later...");
 };
+
+
+function fetchAudio(value) {
+  const options = {
+    method: 'POST',
+    headers: {
+      'xi-api-key': 'ac12c1b69302b01f0a81f7553c3f32e1',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      text: value
+    })
+  };
+
+  fetch('https://api.elevenlabs.io/v1/text-to-speech/TxGEqnHWrfWFTfGW9XjX', options)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      return response.blob();
+    })
+    .then(blob => {
+      // Create a URL for the blob
+      const audioURL = URL.createObjectURL(blob);
+      // Use an Audio element to play the audio
+      const audio = new Audio(audioURL);
+      audio.playbackRate = 1;
+      audio.play();
+    })
+    .catch(err => console.error('Fetch error:', err));
+}

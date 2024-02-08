@@ -120,33 +120,78 @@ client.onclose = () => {
 };
 
 
-function fetchAudio(value) {
-  const options = {
-    method: 'POST',
-    headers: {
-      'xi-api-key': 'ac12c1b69302b01f0a81f7553c3f32e1',
-      'Content-Type': 'application/json'
+
+const voiceId = "TxGEqnHWrfWFTfGW9XjX";
+const model = 'eleven_monolingual_v1';
+const wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream-input?model_id=${model}`;
+const textToSpeachSocket = new WebSocket(wsUrl);
+
+textToSpeachSocket.onopen = function (event) {
+  textToSpeachSocket.send(JSON.stringify({
+    "text": " ",
+    "voice_settings": {
+      "stability": 0.5,
+      "similarity_boost": 0.8
     },
-    body: JSON.stringify({
-      text: value
-    })
-  };
+    "xi_api_key": "ac12c1b69302b01f0a81f7553c3f32e1",
+  }));
 
-  fetch('https://api.elevenlabs.io/v1/text-to-speech/TxGEqnHWrfWFTfGW9XjX', options)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+  textToSpeachSocket.send(JSON.stringify({
+    "text": "Hello World ",
+    "try_trigger_generation": true,
+  }));
 
-      return response.blob();
-    })
-    .then(blob => {
-      // Create a URL for the blob
-      const audioURL = URL.createObjectURL(blob);
-      // Use an Audio element to play the audio
-      const audio = new Audio(audioURL);
-      audio.playbackRate = 1;
-      audio.play();
-    })
-    .catch(err => console.error('Fetch error:', err));
-}
+
+  textToSpeachSocket.send(JSON.stringify({
+    "text": ""
+  }));
+};
+
+// 5. Handle server responses
+textToSpeachSocket.onmessage = function (event) {
+  const response = JSON.parse(event.data);
+
+  console.log("Server response:", response);
+
+  if (response.audio) {
+    const audioBytes = atob(response.audio);
+    const audioArray = new Uint8Array(audioBytes.length);
+    for (let i = 0; i < audioBytes.length; i++) {
+      audioArray[i] = audioBytes.charCodeAt(i);
+    }
+
+    const audioBlob = new Blob([audioArray], { type: 'audio/mp3' });
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+
+    audio.play()
+      .then(() => console.log("Audio is playing"))
+      .catch(error => console.error("Error playing audio:", error));
+
+    console.log("Received audio chunk");
+  } else {
+    console.log("No audio data in the response");
+  }
+
+  if (response.isFinal) {
+    // the generation is complete
+  }
+
+  if (response.normalizedAlignment) {
+    // use the alignment info if needed
+  }
+};
+
+// Handle errors
+textToSpeachSocket.onerror = function (error) {
+  console.error(`WebSocket Error: ${error}`);
+};
+
+// Handle socket closing
+textToSpeachSocket.onclose = function (event) {
+  if (event.wasClean) {
+    console.info(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+  } else {
+    console.warn('Connection died');
+  }
+};
